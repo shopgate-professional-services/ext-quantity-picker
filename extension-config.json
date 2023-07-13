@@ -1,0 +1,14 @@
+{
+  "version": "1.0.0",
+  "id": "@shopgate-project/quantity-picker",
+  "components": [
+    {
+      "id": "QuantityPicker",
+      "type": "portals",
+      "path": "frontend/portals/QuantityPicker/index.jsx",
+      "target": "product.add-to-cart-bar"
+    }
+  ],
+  "configuration": {
+  }
+}
