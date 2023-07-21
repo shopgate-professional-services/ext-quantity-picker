@@ -1,7 +1,7 @@
 # ext-quantity-picker
 Adds a quantity picker to the add-to-cart bar
 
-## Example configuration
+## Configuration
 
 The quantity picker provides classes for changing the styling with CSS (f.e. content-syling extension).
 
