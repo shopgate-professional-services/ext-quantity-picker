@@ -93,7 +93,7 @@ const styles = {
 const AddToCartBar = ({
   handleAddToCart, resetClicked, loading, disabled, conditioner,
 }) => {
-  const { setQuantity: setContextQuantity, productId } = useCurrentProduct();
+  const { setQuantity: setContextQuantity } = useCurrentProduct();
   const [inputQuantity, setInputQuantity] = useState(1);
   const [blurredInputQuantity, setBlurredInputQuantity] = useState(inputQuantity);
   const buttonRef = useRef(null);
@@ -109,14 +109,6 @@ const AddToCartBar = ({
       handleAddToCart();
     });
   }), [conditioner, handleAddToCart, inputQuantity, setContextQuantity]);
-
-  const handleOnKeyPress = useCallback((e) => {
-    // Simulate button click when enter key was pressed
-    if (e.nativeEvent.keyCode === 13) {
-      // eslint-disable-next-line extra-rules/no-commented-out-code
-      // buttonRef.current.click();
-    }
-  }, []);
 
   const handleSanitizeInput = useCallback((value) => {
     const valid = /^\d{0,2}$/i.test(value);
@@ -177,7 +169,6 @@ const AddToCartBar = ({
               onSanitize={handleSanitizeInput}
               onChange={setInputQuantity}
               onFocusChange={handleFocusChange}
-              onKeyPress={handleOnKeyPress}
               disabled={disabled}
             />
           </div>
