@@ -101,7 +101,9 @@ const AddToCartBar = ({
   handleAddToCart, resetClicked, loading, disabled, conditioner, stockInfo,
 }) => {
   const minQuantity = stockInfo?.minOrderQuantity > 0 ? stockInfo.minOrderQuantity : 1;
-  const maxQuantity = stockInfo?.maxOrderQuantity > 0 ? stockInfo.maxOrderQuantity : 99;
+  const maxQuantity = stockInfo?.maxOrderQuantity > 0
+    ? Math.min(stockInfo.maxOrderQuantity, 99)
+    : 99;
 
   const initialQuantity = minQuantity > 1 ? minQuantity : 1;
 

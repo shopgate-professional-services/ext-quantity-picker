@@ -39,9 +39,5 @@
   },
   "dependencies": {
     "@shopgate-ps/pwa-extension-kit": "^0.6.0"
-  },
-  "peerDependenciees": {
-    "@shopgate/pwa-common": "^6.3.1",
-    "@shopgate/pwa-core": "^6.3.1"
   }
 }
