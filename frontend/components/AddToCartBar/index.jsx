@@ -1,4 +1,9 @@
-import React, { useCallback, useState, useRef } from 'react';
+import React, {
+  useCallback,
+  useState,
+  useRef,
+  useEffect,
+} from 'react';
 import PropTypes from 'prop-types';
 import { css } from 'glamor';
 import { Input, RippleButton } from '@shopgate/engage/components';
@@ -6,6 +11,7 @@ import { Section } from '@shopgate/engage/a11y';
 import { useCurrentProduct } from '@shopgate/engage/core';
 import { themeConfig } from '@shopgate/pwa-common/helpers/config';
 import AddToCartButton from './components/AddToCartButton';
+import connect from './connector';
 
 const { colors, shadows } = themeConfig;
 
@@ -18,6 +24,7 @@ const styles = {
     overflow: 'hidden',
     padding: '8px',
     display: 'flex',
+    bottom: 'var(--safe-area-inset-bottom)',
   }),
   innerContainer: css({
     minHeight: 46,
@@ -28,7 +35,7 @@ const styles = {
     border: '1px solid #DCDCDC',
     borderRadius: 5,
     borderLeft: 0,
-    borderRight:0,
+    borderRight: 0,
     borderTopRightRadius: 0,
     borderTopLeftRadius: 0,
     borderBottomRightRadius: 0,
@@ -69,7 +76,7 @@ const styles = {
     fontSize: '1.25rem',
     fontWeight: 500,
     padding: '0px !important',
-    minWidth: '14% !important'
+    minWidth: '14% !important',
   }).toString(),
   cartInputButtonMinus: css({
     background: '#fff !important',
@@ -81,7 +88,7 @@ const styles = {
     fontSize: '1.25rem',
     fontWeight: 500,
     padding: '0px !important',
-    minWidth: '14% !important'
+    minWidth: '14% !important',
   }).toString(),
 };
 
@@ -91,12 +98,24 @@ const styles = {
  * @returns {JSX}
  */
 const AddToCartBar = ({
-  handleAddToCart, resetClicked, loading, disabled, conditioner,
+  handleAddToCart, resetClicked, loading, disabled, conditioner, stockInfo,
 }) => {
+  const minQuantity = stockInfo?.minOrderQuantity > 0 ? stockInfo.minOrderQuantity : 1;
+  const maxQuantity = stockInfo?.maxOrderQuantity > 0
+    ? Math.min(stockInfo.maxOrderQuantity, 99)
+    : 99;
+
+  const initialQuantity = minQuantity > 1 ? minQuantity : 1;
+
   const { setQuantity: setContextQuantity } = useCurrentProduct();
-  const [inputQuantity, setInputQuantity] = useState(1);
-  const [blurredInputQuantity, setBlurredInputQuantity] = useState(inputQuantity);
+  const [inputQuantity, setInputQuantity] = useState(initialQuantity);
+  const [blurredInputQuantity, setBlurredInputQuantity] = useState(initialQuantity);
   const buttonRef = useRef(null);
+
+  useEffect(() => {
+    setInputQuantity(initialQuantity);
+    setBlurredInputQuantity(initialQuantity);
+  }, [initialQuantity]);
 
   const handleButtonClick = useCallback(() => new Promise((resolve) => {
     conditioner.check().then((fulfilled) => {
@@ -111,38 +130,48 @@ const AddToCartBar = ({
   }), [conditioner, handleAddToCart, inputQuantity, setContextQuantity]);
 
   const handleSanitizeInput = useCallback((value) => {
-    const valid = /^\d{0,2}$/i.test(value);
+    const valid = /^\d{0,2}$/.test(value);
 
-    return valid ? value : inputQuantity;
-  }, [inputQuantity]);
+    if (!valid) return inputQuantity;
+
+    if (value === '') return value;
+
+    const numericValue = parseInt(value, 10);
+    if (numericValue > maxQuantity) return maxQuantity;
+
+    return value;
+  }, [inputQuantity, maxQuantity]);
 
   const handleFocusChange = useCallback((focused) => {
     if (!focused) {
-      if (!inputQuantity) {
+      const numericValue = parseInt(inputQuantity, 10);
+
+      if (Number.isNaN(numericValue)) {
         setInputQuantity(blurredInputQuantity);
+        return;
       }
 
-      if (inputQuantity) {
-        setBlurredInputQuantity(inputQuantity);
-      }
+      const clamped = Math.min(Math.max(numericValue, minQuantity), maxQuantity);
+      setInputQuantity(clamped);
+      setBlurredInputQuantity(clamped);
     }
 
     if (focused) {
       setInputQuantity('');
     }
-  }, [blurredInputQuantity, inputQuantity]);
+  }, [blurredInputQuantity, inputQuantity, minQuantity, maxQuantity]);
 
   const handleIncreaseButton = useCallback(() => {
-    if (inputQuantity <= 99) {
-      setInputQuantity(parseInt(inputQuantity) + parseInt(1));
+    if (parseInt(inputQuantity, 10) < maxQuantity) {
+      setInputQuantity(prev => parseInt(prev, 10) + 1);
     }
-  });
+  }, [inputQuantity, maxQuantity]);
 
   const handleDecreaseButton = useCallback(() => {
-    if (inputQuantity >= 2) {
-      setInputQuantity(parseInt(inputQuantity) - parseInt(1));
+    if (parseInt(inputQuantity, 10) > minQuantity) {
+      setInputQuantity(prev => parseInt(prev, 10) - 1);
     }
-  });
+  }, [inputQuantity, minQuantity]);
 
   return (
     <Section title="product.sections.purchase" className="theme__product__add-to-cart-bar">
@@ -151,7 +180,7 @@ const AddToCartBar = ({
           <RippleButton
             className={`${styles.cartInputButtonMinus} quantity-picker__minus`}
             type="secondary"
-            onClick={handleDecreaseButton}  
+            onClick={handleDecreaseButton}
           >
             -
           </RippleButton>
@@ -167,7 +196,9 @@ const AddToCartBar = ({
               }}
               validateOnBlur={false}
               onSanitize={handleSanitizeInput}
-              onChange={setInputQuantity}
+              onChange={(value) => {
+                setInputQuantity(value);
+              }}
               onFocusChange={handleFocusChange}
               disabled={disabled}
             />
@@ -175,7 +206,7 @@ const AddToCartBar = ({
           <RippleButton
             className={`${styles.cartInputButtonPlus} quantity-picker__plus`}
             type="secondary"
-            onClick={handleIncreaseButton}  
+            onClick={handleIncreaseButton}
           >
             +
           </RippleButton>
@@ -193,12 +224,17 @@ const AddToCartBar = ({
   );
 };
 
+AddToCartBar.defaultProps = {
+  stockInfo: {},
+};
+
 AddToCartBar.propTypes = {
   conditioner: PropTypes.shape().isRequired,
   disabled: PropTypes.bool.isRequired,
   handleAddToCart: PropTypes.func.isRequired,
   loading: PropTypes.bool.isRequired,
   resetClicked: PropTypes.func.isRequired,
+  stockInfo: PropTypes.shape(),
 };
 
-export default AddToCartBar;
+export default connect(AddToCartBar);

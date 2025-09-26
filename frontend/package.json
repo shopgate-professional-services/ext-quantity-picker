@@ -1,6 +1,7 @@
 {
   "name": "@shopgate-project/quantity-picker",
-  "description": "",
+  "version": "1.1.0",
+  "description": "Adds a quantity picker to the add-to-cart bar",
   "license": "Apache-2.0",
   "scripts": {
     "lint": "eslint --parser babel-eslint --ignore-path ../.gitignore --ignore-path .eslintignore --ext .js --ext .jsx .", 
@@ -39,9 +40,5 @@
   },
   "dependencies": {
     "@shopgate-ps/pwa-extension-kit": "^0.6.0"
-  },
-  "peerDependenciees": {
-    "@shopgate/pwa-common": "^6.3.1",
-    "@shopgate/pwa-core": "^6.3.1"
   }
 }
