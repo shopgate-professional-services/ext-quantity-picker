@@ -1,6 +1,7 @@
 {
   "name": "@shopgate-project/quantity-picker",
-  "description": "",
+  "version": "1.1.0",
+  "description": "Adds a quantity picker to the add-to-cart bar",
   "license": "Apache-2.0",
   "scripts": {
     "lint": "eslint --parser babel-eslint --ignore-path ../.gitignore --ignore-path .eslintignore --ext .js --ext .jsx .", 
