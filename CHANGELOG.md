@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.1] - 2026-09-15
+### Fixed
+* Quantity picker no longer overlaps the tax/legal text on the product detail page on devices with a bottom safe area.
+
 ## [1.1.0] - 2025-09-26
 ### Added
 * Apply min/max order quantities.
