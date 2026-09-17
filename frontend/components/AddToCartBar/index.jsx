@@ -24,7 +24,7 @@ const styles = {
     overflow: 'hidden',
     padding: '8px',
     display: 'flex',
-    bottom: 'var(--safe-area-inset-bottom)',
+    paddingBottom: 'calc(8px + var(--safe-area-inset-bottom))',
   }),
   innerContainer: css({
     minHeight: 46,
