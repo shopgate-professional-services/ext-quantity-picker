@@ -117,17 +117,46 @@ const AddToCartBar = ({
     setBlurredInputQuantity(initialQuantity);
   }, [initialQuantity]);
 
+  // Keep the product context in sync while the user picks. The add-to-cart bar
+  // reads `context.quantity` when the button is pressed, so pushing the value
+  // one statement before calling it races React committing the provider's
+  // setState - when the commit loses, the cart gets the pre-click quantity (1)
+  // no matter what the picker shows. Mirrors engage's own
+  // ProductUnitQuantityPicker, which wires `setQuantity` straight to onChange.
+  useEffect(() => {
+    const numericValue = parseInt(inputQuantity, 10);
+
+    // Empty while the input is focused - don't push NaN into the context.
+    if (Number.isNaN(numericValue)) return;
+
+    setContextQuantity(numericValue);
+  }, [inputQuantity, setContextQuantity]);
+
   const handleButtonClick = useCallback(() => new Promise((resolve) => {
     conditioner.check().then((fulfilled) => {
       // Resolve early to enable button animation while the request runs
       resolve(fulfilled);
 
-      // Update the product context
-      setContextQuantity(parseInt(inputQuantity, 10));
-      // Trigger addToCart
-      handleAddToCart();
+      const numericValue = parseInt(inputQuantity, 10);
+      // Clicking straight out of a focused (emptied) input never went through
+      // the blur clamp, so fall back to the last committed value.
+      const quantity = Number.isNaN(numericValue)
+        ? blurredInputQuantity
+        : Math.min(Math.max(numericValue, minQuantity), maxQuantity);
+
+      // Trigger addToCart from `setQuantity`'s completion callback, so the
+      // context is guaranteed committed before the bar reads it.
+      setContextQuantity(quantity, handleAddToCart);
     });
-  }), [conditioner, handleAddToCart, inputQuantity, setContextQuantity]);
+  }), [
+    blurredInputQuantity,
+    conditioner,
+    handleAddToCart,
+    inputQuantity,
+    maxQuantity,
+    minQuantity,
+    setContextQuantity,
+  ]);
 
   const handleSanitizeInput = useCallback((value) => {
     const valid = /^\d{0,2}$/.test(value);

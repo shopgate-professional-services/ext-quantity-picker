@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.1] - 2026-09-29
+### Fixed
+* Add-to-cart used the pre-click quantity when the product context commit lost the race against the click handler.
+
 ## [1.1.0] - 2025-09-26
 ### Added
 * Apply min/max order quantities.
