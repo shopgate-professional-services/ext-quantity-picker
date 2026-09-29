@@ -8,11 +8,9 @@ import AddToCartBar from '../../components/AddToCartBar';
  * @param {Node} children Children of portal.
  * @return {Node}
  */
-const QuantityPicker = ({ children, ...rest }) => {
-  return (
-    <AddToCartBar {...rest} />
-  );
-};
+const QuantityPicker = ({ children, ...rest }) => (
+  <AddToCartBar {...rest} />
+);
 
 QuantityPicker.propTypes = {
   children: PropType.node,

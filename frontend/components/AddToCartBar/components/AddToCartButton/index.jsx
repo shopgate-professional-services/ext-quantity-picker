@@ -191,7 +191,7 @@ class AddToCartButton extends Component {
            * favorites when there are many of them.
            */
         }
-        {this.props.isLoading &&
+        {this.props.isLoading && (
           <div className={`${styles.icon} ${styles.spinnerIcon}`} style={spinnerInlineStyle}>
             <IndicatorCircle
               color={themeConfig.colors.primaryContrast}
@@ -199,7 +199,7 @@ class AddToCartButton extends Component {
               paused={!this.props.isLoading}
             />
           </div>
-        }
+        )}
         <div className={tickIconStyle} style={tickInlineStyle}>
           <TickIcon className={styles.tickIconSvg} />
         </div>
