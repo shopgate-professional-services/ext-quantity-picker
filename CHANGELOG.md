@@ -6,7 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## [1.1.2] - 2026-09-29
 ### Fixed
-* Add-to-cart used the pre-click quantity when the product context commit lost the race against the click handler.
+* Add-to-cart could use a quantity other than the one the picker showed.
+* A quantity below `minOrderQuantity`, or `0`, could reach the product context.
 
 ## [1.1.1] - 2026-09-15
 ### Fixed
