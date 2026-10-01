@@ -155,8 +155,9 @@ const AddToCartBar = ({
         ? blurredInputQuantity
         : clampQuantity(numericValue, minQuantity, maxQuantity);
 
-      // Trigger addToCart from `setQuantity`'s completion callback, so the
-      // context is guaranteed committed before the bar reads it.
+      // Re-commit before adding. The callback only matters on themes whose
+      // add-to-cart reads the context at call time; from 7.31 it reads a
+      // closure the sync effect above has already updated.
       setContextQuantity(quantity, handleAddToCart);
     });
   }), [
