@@ -93,6 +93,16 @@ const styles = {
 };
 
 /**
+ * Clamp a committed value into the orderable range. `handleSanitizeInput` only
+ * caps the top, since typing "12" has to pass through "1".
+ * @param {number} value The value to clamp.
+ * @param {number} min Minimum order quantity.
+ * @param {number} max Maximum order quantity.
+ * @returns {number}
+ */
+const clampQuantity = (value, min, max) => Math.min(Math.max(value, min), max);
+
+/**
  * AddToCartBar component
  * @param {Object} props Component props
  * @returns {JSX}
@@ -107,7 +117,7 @@ const AddToCartBar = ({
 
   const initialQuantity = minQuantity > 1 ? minQuantity : 1;
 
-  const { setQuantity: setContextQuantity } = useCurrentProduct();
+  const { quantity: contextQuantity, setQuantity: setContextQuantity } = useCurrentProduct();
   const [inputQuantity, setInputQuantity] = useState(initialQuantity);
   const [blurredInputQuantity, setBlurredInputQuantity] = useState(initialQuantity);
   const buttonRef = useRef(null);
@@ -117,17 +127,48 @@ const AddToCartBar = ({
     setBlurredInputQuantity(initialQuantity);
   }, [initialQuantity]);
 
+  // The add-to-cart bar builds its payload from `context.quantity`, so the
+  // displayed value has to get in there and stay there - the theme resets it to
+  // 1 on any props change. Depending on `contextQuantity` re-asserts it; the
+  // equality guard stops the effect looping on its own write.
+  useEffect(() => {
+    const numericValue = parseInt(inputQuantity, 10);
+
+    // Empty while the input is focused - don't push NaN into the context.
+    if (Number.isNaN(numericValue)) return;
+
+    const quantity = clampQuantity(numericValue, minQuantity, maxQuantity);
+    if (quantity === contextQuantity) return;
+
+    setContextQuantity(quantity);
+  }, [inputQuantity, contextQuantity, minQuantity, maxQuantity, setContextQuantity]);
+
   const handleButtonClick = useCallback(() => new Promise((resolve) => {
     conditioner.check().then((fulfilled) => {
       // Resolve early to enable button animation while the request runs
       resolve(fulfilled);
 
-      // Update the product context
-      setContextQuantity(parseInt(inputQuantity, 10));
-      // Trigger addToCart
-      handleAddToCart();
+      const numericValue = parseInt(inputQuantity, 10);
+      // Clicking straight out of a focused (emptied) input never went through
+      // the blur clamp, so fall back to the last committed value.
+      const quantity = Number.isNaN(numericValue)
+        ? blurredInputQuantity
+        : clampQuantity(numericValue, minQuantity, maxQuantity);
+
+      // Re-commit before adding. The callback only matters on themes whose
+      // add-to-cart reads the context at call time; from 7.31 it reads a
+      // closure the sync effect above has already updated.
+      setContextQuantity(quantity, handleAddToCart);
     });
-  }), [conditioner, handleAddToCart, inputQuantity, setContextQuantity]);
+  }), [
+    blurredInputQuantity,
+    conditioner,
+    handleAddToCart,
+    inputQuantity,
+    maxQuantity,
+    minQuantity,
+    setContextQuantity,
+  ]);
 
   const handleSanitizeInput = useCallback((value) => {
     const valid = /^\d{0,2}$/.test(value);
@@ -151,7 +192,7 @@ const AddToCartBar = ({
         return;
       }
 
-      const clamped = Math.min(Math.max(numericValue, minQuantity), maxQuantity);
+      const clamped = clampQuantity(numericValue, minQuantity, maxQuantity);
       setInputQuantity(clamped);
       setBlurredInputQuantity(clamped);
     }

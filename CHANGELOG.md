@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.2] - 2026-09-29
+### Fixed
+* Add-to-cart could use a quantity other than the one the picker showed.
+* A quantity below `minOrderQuantity`, or `0`, could reach the product context.
+
 ## [1.1.1] - 2026-09-15
 ### Fixed
 * Quantity picker no longer overlaps the tax/legal text on the product detail page on devices with a bottom safe area.
